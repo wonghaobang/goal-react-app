@@ -1,6 +1,12 @@
 import axios from "axios"
 
-const API_URL = "http://localhost:5000/api/goals"
+let API_URL
+
+if (process.env.NODE_ENV === "production") {
+  API_URL = "https://wbdv-goal-app-full.herokuapp.com/api/goals"
+} else {
+  API_URL = "http://localhost:5000/api/goals"
+}
 
 const getGoals = async (token) => {
   const config = {
