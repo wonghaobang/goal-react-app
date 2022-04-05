@@ -1,5 +1,10 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
+import { useSelector, useDispatch } from "react-redux"
+import { useNavigate } from "react-router-dom"
+import { toast } from "react-toastify"
 import { FaUser } from "react-icons/fa"
+import { register, resetAuthState } from "../redux/auth/authSlice"
+import Spinner from "../components/Spinner"
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -8,6 +13,14 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   })
+
+  const { name, email, password, confirmPassword } = formData
+
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const { user, isError, isLoading, message } = useSelector(
+    (state) => state.auth
+  )
 
   const handleOnChange = (e) => {
     setFormData((prevState) => ({
@@ -18,9 +31,29 @@ const Register = () => {
 
   const handleOnSubmit = (e) => {
     e.preventDefault()
+    if (password !== confirmPassword) {
+      toast.error("Password do not match")
+    } else {
+      dispatch(register({ name, email, password }))
+    }
   }
 
-  const { name, email, password, confirmPassword } = formData
+  useEffect(() => {
+    if (isError) {
+      toast.error(message, {
+        position: toast.POSITION.BOTTOM_CENTER,
+        autoClose: 3000,
+      })
+    }
+
+    if (user) {
+      toast.success("login successfully")
+      navigate("/")
+    }
+
+    dispatch(resetAuthState())
+  }, [isError, user, message, dispatch, navigate])
+
   return (
     <>
       <section className="heading">
@@ -35,7 +68,7 @@ const Register = () => {
           <div className="form-group">
             <input
               type="text"
-              className="form-control"
+              className="form-group-input"
               id="name"
               name="name"
               value={name}
@@ -46,7 +79,7 @@ const Register = () => {
           <div className="form-group">
             <input
               type="email"
-              className="form-control"
+              className="form-group-input"
               id="email"
               name="email"
               value={email}
@@ -57,7 +90,7 @@ const Register = () => {
           <div className="form-group">
             <input
               type="password"
-              className="form-control"
+              className="form-group-input"
               id="password"
               name="password"
               value={password}
@@ -68,7 +101,7 @@ const Register = () => {
           <div className="form-group">
             <input
               type="password"
-              className="form-control"
+              className="form-group-input"
               id="confirmPassword"
               name="confirmPassword"
               value={confirmPassword}
@@ -83,6 +116,8 @@ const Register = () => {
           </div>
         </form>
       </section>
+
+      {isLoading && <Spinner />}
     </>
   )
 }

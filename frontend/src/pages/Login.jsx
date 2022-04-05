@@ -1,11 +1,23 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { FaSignInAlt } from "react-icons/fa"
+import { useSelector, useDispatch } from "react-redux"
+import { useNavigate } from "react-router-dom"
+import { toast } from "react-toastify"
+import { login, resetAuthState } from "../redux/auth/authSlice"
+import Spinner from "../components/Spinner"
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
+
+  const { email, password } = formData
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const { user, isError, isLoading, message } = useSelector(
+    (state) => state.auth
+  )
 
   const handleOnChange = (e) => {
     setFormData((prevState) => ({
@@ -16,11 +28,25 @@ const Login = () => {
 
   const handleOnSubmit = (e) => {
     e.preventDefault()
+    dispatch(login({ email, password }))
   }
 
-  console.log(formData)
+  useEffect(() => {
+    if (isError) {
+      toast.error(message, {
+        position: toast.POSITION.BOTTOM_CENTER,
+        autoClose: 3000,
+      })
+    }
 
-  const { email, password } = formData
+    if (user) {
+      toast.success("login successfully")
+      navigate("/")
+    }
+
+    dispatch(resetAuthState())
+  }, [isError, user, message, dispatch, navigate])
+
   return (
     <>
       <section className="heading">
@@ -35,7 +61,7 @@ const Login = () => {
           <div className="form-group">
             <input
               type="email"
-              className="form-control"
+              className="form-group-input"
               id="email"
               name="email"
               value={email}
@@ -46,7 +72,7 @@ const Login = () => {
           <div className="form-group">
             <input
               type="password"
-              className="form-control"
+              className="form-group-input"
               id="password"
               name="password"
               value={password}
@@ -62,6 +88,8 @@ const Login = () => {
           </div>
         </form>
       </section>
+
+      {isLoading && <Spinner />}
     </>
   )
 }
